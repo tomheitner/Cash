@@ -1,44 +1,34 @@
 import requests
 import pandas as pd
-from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
-from modules.config import api_key
 
-def pull_stock(symbol, interval=1, show_plots=False, return_df=False):
-    df_data = make_request(symbol, interval=interval)
-    stock, time_axis = process_df(df_data)
-    if show_plots: plot_stock(stock, time_axis, symbol=symbol, interval=interval)
-    
-    if return_df: 
-        return stock, time_axis, df_data
+from datetime import datetime, timedelta
+import yfinance as yf
+
+def pull_stock(
+    symbol,
+    interval = '1d', # Valid intervals: [1m, 2m, 5m, 15m, 30m, 60m, 90m, 1h, 1d, 5d, 1wk, 1mo, 3mo]
+    start_year=None,
+    start_month=None,
+    start_day=None,
+    end_year=None,
+    end_month=None,
+    end_day=None
+):
+    if end_year is None or end_month is None or end_day is None:
+        end_date = datetime.now()  # default end date is now
     else:
-        return stock, time_axis
+        end_date = datetime(year=end_year, month=end_month, day=end_day)
 
-def make_request(symbol, interval=1):
-    url = 'https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={}&interval={}min&apikey={}'.format(symbol, interval, api_key)
-    r = requests.get(url)
-    json_obj = r.json()
+    if start_year is None or start_month is None or start_day is None:
+        start_date = end_date - timedelta(days=10)  # default start time is 10 days before end date
+    else:
+        start_date = datetime(year=start_year, month=start_month, day=start_day)
 
-    data = json_obj['Time Series ({}min)'.format(interval)]
-    # df_data = pd.DataFrame(pd.DataFrame(data).T, index=range(len(data)))
-    df_data = pd.DataFrame(data).T
-    return df_data
-
-def format_df_for_backtest(df_data):
-    df_data = df_data.rename(columns = {
-        "1. open":'Open',
-        "2. high":'High',
-        "3. low":'Low',
-        "4. close":'Close', 
-        "5. volume":'Volume'
-    }, inplace = False)
-    return df_data
-
-def pull_stock_for_backtest(symbol, interval=1):
-    df_data = make_request(symbol, interval=interval)
-    df_data = format_df_for_backtest(df_data)
-    return df_data
+    data = yf.download(tickers=symbol, start=start_date, end=end_date, interval=interval)
+    
+    return data
 
 def process_df(df_data):
     open_array = []
@@ -63,7 +53,10 @@ def process_df(df_data):
         }
     return stock, time_axis
 
-def plot_stock(stock, time_axis, symbol='', interval=None):
+def plot_stock(df_data, symbol='', interval=None):
+    
+    stock, time_axis = process_df(df_data)
+    
     x_size = 15
     y_size = 2
 

@@ -1,1 +1,2 @@
-backtesting
+matplotlib==3.2.2
+backtrader
