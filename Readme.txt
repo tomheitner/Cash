@@ -1,3 +1,3 @@
-v0.0.1
+v0.0.2
 
-A custom backtesting module. Very limited functionality.
+An implemented backtesting module (backtesting). Limited functionality.
