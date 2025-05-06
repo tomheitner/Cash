@@ -1,5 +1,5 @@
-v0.0.3
+v0.0.4
 
-An implemented backtesting module (backtrader).
-This module causes problems with matplotlib > 3.2.2
-Generally problematic
+An implemented backtesting module (backtesting). Limited functionality.
+
+Add config file with var <api_key> containing yahoof's API key.
